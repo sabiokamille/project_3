@@ -7,14 +7,42 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <errno.h>
+#include <sys/wait.h>
 #define LISTEN_Q 8
 
-int create_listener(char* service, listen_q) {
+volatile int active = 1;
+/*struct player_list {
+    int num_players;
+    char* players = (char *) malloc(num_players * sizeof(char));
+    pthread_mutex_t lock;
+}
+
+struct player {
+    char *player_name;
+    char role;
+
+}
+
+void new_player (struct player_list *players_list) {
+    pthread_mutex_lock(players_list->lock);
+    players_list->num_players++;
+}
+*/
+
+// data to be sent to worker threads
+struct connection_data {
+    struct sockaddr_storage addr;
+    socklen_t addr_len;
+    int fd;
+};
+
+int create_listener(char* service, int listen_q) {
     struct addrinfo hints, *info, *info_list;
     int error, sock;
 
     //initialize hints struct
-    memset(0, &hints, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC; //allow IPv4 or IPv6
     hints.ai_socktype = SOCK_STREAM; //stream socket
     hints.ai_flags = AI_PASSIVE; //for wildcard IP addresses
@@ -59,14 +87,20 @@ int create_listener(char* service, listen_q) {
     return sock;
 }
 
+void *read_response() {
+
+}
+
 int main(int argc, char **argv) {
     sigset_t mask;
     struct connection_data *con;
+    struct connection_data *con2;
     int error;
     pthread_t tid;
-    char *service = argc == 2 ? argv[1] : "15000";
-    install_handlers(&mask);
-    int listener = open_listener(service, QUEUE_SIZE);
+    pthread_t tid2;
+    char *service = argc == 1 ? argv[0] : "15213";
+    // install_handlers(&mask);
+    int listener = create_listener(service, LISTEN_Q);
     if (listener < 0) {
         exit(EXIT_FAILURE);
     }
@@ -83,19 +117,44 @@ int main(int argc, char **argv) {
             // TODO check for specific error conditions
             continue;
         }
+        printf("bingo\n");
+        //create second connection to second player client
+        con2 = (struct connection_data *)malloc(sizeof(struct connection_data));
+        con2->addr_len = sizeof(struct sockaddr_storage);
+        con2->fd = accept(listener,
+        (struct sockaddr *)&con->addr,
+        &con->addr_len);
+        if (con->fd < 0) {
+            perror("accept");
+            free(con);
+            // TODO check for specific error conditions
+            continue;
+        }
         // temporarily disable signals
         // (the worker thread will inherit this mask, ensuring that SIGINT is
         // only delivered to this thread)
+        /* 
         error = pthread_sigmask(SIG_BLOCK, &mask, NULL);
         if (error != 0) {
             fprintf(stderr, "sigmask: %s\n", strerror(error));
             exit(EXIT_FAILURE);
-        }
-        error = pthread_create(&tid, NULL, read_data, con);
+        } 
+        */
+        error = pthread_create(&tid, NULL, read_response, con);
         if (error != 0) {
             fprintf(stderr, "pthread_create: %s\n", strerror(error));
             close(con->fd);
             free(con);
+            continue;
+        }
+        // automatically clean up child threads once they terminate
+        pthread_detach(tid);
+
+        error = pthread_create(&tid2, NULL, read_response, con2);
+        if (error != 0) {
+            fprintf(stderr, "pthread_create: %s\n", strerror(error));
+            close(con2->fd);
+            free(con2);
             continue;
         }
         // automatically clean up child threads once they terminate
