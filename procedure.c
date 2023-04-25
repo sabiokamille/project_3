@@ -1,15 +1,26 @@
 #include "procedure.h"
 
+int *game_over = NULL;
 void *play_game(int player1, int player2){
-    char buf[BUFLEN + 1];
-    int bytes;
-
-    bytes = read(player1, buf, BUFLEN);
-        if (bytes > 0) {
-            buf[bytes] = '\0';
-            // printf(buf);
-            parse_msg(buf);
-        }
+    while (!game_over) {
+        char buf[BUFLEN + 1];
+        int bytes;
+        bytes = read(player1, buf, BUFLEN);
+            if (bytes > 0) {
+                buf[bytes] = '\0';
+                // printf(buf);
+                parse_msg(buf);
+            }
+        
+        bytes = read(player2, buf, BUFLEN);
+            if (bytes > 0) {
+                buf[bytes] = '\0';
+                // printf(buf);
+                parse_msg(buf);
+            }
+    }
+    send_msg(player1, "OVER");
+    send_msg(player2, "OVER");
 }
 
 char* token_separater(char *source, char *delimiter, char **last) {
@@ -88,7 +99,7 @@ void parse_msg(char* msg_rcvd) {
     decode_msg(code, second_field, third_field);
 }
 
-void decode_msg(char* code, char* second_field, char* third_field){
+int decode_msg(char* code, char* second_field, char* third_field){
     if (atoi(second_field) != strlen(third_field)) {
         err_handler("Incorrect third field length.");
     }
@@ -96,16 +107,23 @@ void decode_msg(char* code, char* second_field, char* third_field){
         if(strcmp(code, "PLAY ") == 0) {
             printf("WAIT\n");
         } else if (strcmp(code, "MOVE ") == 0) {
+            /* check if moved to empty space and if the move was a winning move*/
             printf("MOVD\n");
         } else if (strcmp(code, "RSGN ") == 0) {
+            /* notify both players and end game */
+            *game_over = 1;
             printf("MOVD\n");
         } else if (strcmp(code, "DRAW ") == 0) {
+            /* check that proper draw has been sent and 
+             * notify other player and */
             printf("MOVD\n");
         } else {
             err_handler("Invalid code.");
+            return -1;
         }
     } else {
         err_handler("Invalid message structure.");
+        return -1;
     }
 
 }

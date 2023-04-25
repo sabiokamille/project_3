@@ -12,9 +12,10 @@ volatile int active = 1;
 
 void new_player (struct player_list *players_list) {
     pthread_mutex_lock(players_list->lock);
+    // reallocate players_list array to include new player if the name is valid 
     players_list->num_players++;
 };
-*/
+*/ 
 
 // data to be sent to worker threads
 struct connection_data {
@@ -104,7 +105,8 @@ int main(int argc, char **argv) {
             // TODO check for specific error conditions
             continue;
         }
-        printf("Connected to player 1");
+        printf("Connected to player 1\n");
+
         //create second connection to second player client
         con2 = (struct connection_data *)malloc(sizeof(struct connection_data));
         con2->addr_len = sizeof(struct sockaddr_storage);
@@ -117,7 +119,9 @@ int main(int argc, char **argv) {
             // TODO check for specific error conditions
             continue;
         }
-        printf("Connected to player 2");
+        printf("Connected to player 2\n");
+
+        play_game(con->fd, con2->fd);
         // temporarily disable signals
         // (the worker thread will inherit this mask, ensuring that SIGINT is
         // only delivered to this thread)

@@ -29,7 +29,7 @@ void parse_msg(char* msg);
 void decode_msg(char* code, char* second_field, char* third_field);
 
 /* function to send message to client */
-void send_msg(int conn_fd);
+void send_msg(int conn_fd, char* code);
 
 
 #endif /* __PROCEUDRE_H__ */
