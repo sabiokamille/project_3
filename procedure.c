@@ -8,19 +8,17 @@ void *play_game(int player1, int player2){
         bytes = read(player1, buf, BUFLEN);
             if (bytes > 0) {
                 buf[bytes] = '\0';
-                // printf(buf);
                 parse_msg(buf);
             }
         
         bytes = read(player2, buf, BUFLEN);
             if (bytes > 0) {
                 buf[bytes] = '\0';
-                // printf(buf);
                 parse_msg(buf);
             }
     }
-    send_msg(player1, "OVER");
-    send_msg(player2, "OVER");
+    // send_msg(player1, "OVER");
+    // send_msg(player2, "OVER");
 }
 
 char* token_separater(char *source, char *delimiter, char **last) {
@@ -125,7 +123,6 @@ int decode_msg(char* code, char* second_field, char* third_field){
         err_handler("Invalid message structure.");
         return -1;
     }
-
 }
 
 void err_handler(char* reason) {
