@@ -13,18 +13,24 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 
-/* functions for error handling */
-int game_lvl_err_handler(int conn_fd);
-void appl_lvl_err_handler(int conn_fd);
-void pres_lvl_err_handler(int conn_fd);
-void sess_lvl_err_handler(int conn_fd);
+#define BUFLEN 256
+
+/* main function to play game */
+void* play_game(int fd_player_1, int fd_player_2);
+
+/* function for error handling */
+void err_handler(char* reason);
 
 /* functions to parse message */
 char* token_separater(char* source, char* delimiter, char** last);
-char* parse_msg(char* msg);
+void parse_msg(char* msg);
+
+/* function to decode message */
+void decode_msg(char* code, char* second_field, char* third_field);
 
 /* function to send message to client */
 void send_msg(int conn_fd);
+
 
 #endif /* __PROCEUDRE_H__ */
 /* $end procedure.h */

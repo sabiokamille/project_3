@@ -1,19 +1,13 @@
 #define _POSIX_C_SOURCE 200809L
 #include "procedure.h"
 #define LISTEN_Q 8
-#define BUFLEN 256
+
 
 volatile int active = 1;
 /*struct player_list {
     int num_players;
     char* players = (char *) malloc(num_players * sizeof(char));
     pthread_mutex_t lock;
-};
-
-struct player {
-    char *player_name;
-    char role;
-
 };
 
 void new_player (struct player_list *players_list) {
@@ -84,13 +78,13 @@ void *read_response() {
 }
 
 int main(int argc, char **argv) {
-    sigset_t mask;
+    // sigset_t mask;
     struct connection_data *con;
     struct connection_data *con2;
-    int error, bytes;
-    pthread_t tid;
-    char buf[BUFLEN + 1];
-    pthread_t tid2;
+    // int error, bytes;
+    // pthread_t tid;
+    // char buf[BUFLEN + 1];
+    // pthread_t tid2;
     char *service = argc == 1 ? argv[0] : "15213";
     // install_handlers(&mask);
     int listener = create_listener(service, LISTEN_Q);
@@ -110,13 +104,7 @@ int main(int argc, char **argv) {
             // TODO check for specific error conditions
             continue;
         }
-        bytes = read(con->fd, buf, BUFLEN);
-        if (bytes > 0) {
-            buf[bytes] = '\0';
-            printf(buf);
-            parse_msg(buf);
-        }
-
+        printf("Connected to player 1");
         //create second connection to second player client
         con2 = (struct connection_data *)malloc(sizeof(struct connection_data));
         con2->addr_len = sizeof(struct sockaddr_storage);
@@ -129,7 +117,7 @@ int main(int argc, char **argv) {
             // TODO check for specific error conditions
             continue;
         }
-        printf("bingo pt 2\n");
+        printf("Connected to player 2");
         // temporarily disable signals
         // (the worker thread will inherit this mask, ensuring that SIGINT is
         // only delivered to this thread)

@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     sock = connect_inet(argv[1], argv[2]);
     if (sock < 0) exit(EXIT_FAILURE);
     while ((bytes = read(STDIN_FILENO, buf, BUFLEN)) > 0) {
-        printf("writing to buffer\n");
+        // printf("writing to buffer\n");
         write(sock, buf, bytes);
         // FIXME: should check whether the write succeeded!
     }
