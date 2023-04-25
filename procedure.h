@@ -1,6 +1,6 @@
 /* $begin procedure.h */
-#ifndef __PROCEDURE_H__
-#define __PROCEDURE_H__
+#ifndef PROCEDURE_H_
+#define PROCEDURE_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include <netdb.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 
 /* functions for error handling */
 int game_lvl_err_handler(int conn_fd);
@@ -18,8 +19,9 @@ void appl_lvl_err_handler(int conn_fd);
 void pres_lvl_err_handler(int conn_fd);
 void sess_lvl_err_handler(int conn_fd);
 
-/* function to parse message */
-char** parse_msg(char* msg);
+/* functions to parse message */
+char* token_separater(char* source, char* delimiter, char** last);
+char* parse_msg(char* msg);
 
 /* function to send message to client */
 void send_msg(int conn_fd);

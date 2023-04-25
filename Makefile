@@ -1,26 +1,19 @@
 CC = gcc
 CFLAGS = -Wall -g -std=c99 -fsanitize=address,undefined -pthread 
+OBJS = ttt.o ttts.o procedure.o
+TARGET = ttt ttts procedure
 
 
-all: ttt ttts procedure
+all: $(TARGET)
 
-ttt: ttt.o 
+ttt: ttt.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-ttt.o: ttt.c
-	$(CC) $(CFLAGS) -c $^
-
-ttts: ttts.o 
+ttts: ttts.o procedure.o
 	$(CC) $(CFLAGS) -o $@ $^
-
-ttts.o: ttts.c
-	$(CC) $(CFLAGS) -c $^
 
 procedure: procedure.o
-	$(CC) $(CFLAGS) -p $@ $^
-
-procedure.o: procedure.c
-	$(CC) $(CFLAGS) -c $^
+	$(CC) $(CFLAGS) -o procedure procedure.o
 
 clean:
-	rm -rf *.o 
+	rm -rf *.o $(TARGET)
