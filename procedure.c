@@ -7,6 +7,7 @@ void *play_game(int conn1, int conn2) {
     char buf[BUFLEN + 1];
     char buf2[BUFLEN + 1];
     int bytes;
+    int game_begn;
     while (*game_over != 1) {
         /* read from buf until valid input provided */
         bytes = read(conn1, buf, BUFLEN);
@@ -20,23 +21,26 @@ void *play_game(int conn1, int conn2) {
                     parse_msg(buf, player1);
                 }
         }
-        /* read from buf 2 until valid input provided */
+        /* read from buf2 until valid input provided */
         bytes = read(conn2, buf2, BUFLEN);
         player player2;
         player2.fd = conn2;
         player2.role = 'O';
-        while(!parse_msg(buf2, player2)) {
+        while((game_begn = parse_msg(buf2, player2)) == 0) {
             bytes = read(conn2, buf2, BUFLEN);
                 if (bytes > 0) {
                     buf2[bytes] = '\0';
                     parse_msg(buf2, player2);
                 }
         }
+        printf("%d\n", game_begn);
+        if (game_begn == 2) {
+            printf("%d\n", game_begn);
+            send_msg(2, &player1, NULL);
+        }
     }
     close(conn1);
     close(conn2);
-    // send_msg(conn1, "OVER");
-    // send_msg(conn2, "OVER");
 }
 
 char* token_separater(char *source, char *delimiter, char **last) {
@@ -124,7 +128,7 @@ int decode_msg(char* code, char* second_field, char* third_field, struct player_
     if(code) {
         /* check if second string correctly gives string length of third field 
         (excluding null character and whitespaces) */
-        if (atoi(second_field) != (strlen(third_field) - 2)) {
+        if (atoi(second_field) != (strlen(third_field) - 1)) {
             err_handler("Incorrect field length given");
             return 0;
         }
@@ -132,10 +136,11 @@ int decode_msg(char* code, char* second_field, char* third_field, struct player_
             err_handler("Game already started");
             return 0;
         } else if(strcmp(code, "PLAY ") == 0) {
-            printf("WAIT\n");
-            send_msg(1, &player);
+            printf("sending wait to player\n");
+            send_msg(1, &player, NULL);
             if (player.role == 'O') {
-                printf("BEGN\n");
+                printf("begin game\n");
+            return 2;
             }
             return 1;
         } else if (strcmp(code, "MOVE ") == 0) {
@@ -165,27 +170,32 @@ void err_handler(char* reason) {
     // exit(-1);
 }
 
-void send_msg(int code, struct player_struct *player) {
+void send_msg(int code, struct player_struct *player, char* reason) {
     char message[BUFLEN];
     switch (code) {
     case 1:
         strcpy(message, "WAIT");
         write(player->fd, message, sizeof(message));
         break;
-    /*case 2:
-        message = "WAIT";
+    case 2:
+        strcpy(message, "BEGN ");
+        write(player->fd, message, sizeof(message));
         break;
     case 3:
-        message = "WAIT";
+        strcpy(message, "MOVD");
+        write(player->fd, message, sizeof(message));
         break;
     case 4:
-        message = "WAIT";
+        strcpy(message, "INVL | ");
+        write(player->fd, message, sizeof(message));
         break;
     case 5:
-        message = "WAIT";
+        strcpy(message, "DRAW");
+        write(player->fd, message, sizeof(message));
         break;
     case 6:
-        message = "WAIT";
-        break;*/
+        strcpy(message, "OVER");
+        write(player->fd, message, sizeof(message));
+        break;
     }
 }

@@ -35,7 +35,7 @@ int parse_msg(char* msg, struct player_struct player);
 int decode_msg(char* code, char* second_field, char* third_field, struct player_struct player);
 
 /* function to send message to client */
-void send_msg(int code, struct player_struct *player);
+void send_msg(int code, struct player_struct *player, char* reason);
 
 
 #endif /* __PROCEUDRE_H__ */
