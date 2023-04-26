@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
     // pthread_t tid;
     // char buf[BUFLEN + 1];
     // pthread_t tid2;
-    char *service = argc == 1 ? argv[0] : "15213";
+    char *service = argc == 2 ? argv[1] : "15213";
     // install_handlers(&mask);
     int listener = create_listener(service, LISTEN_Q);
     if (listener < 0) {

@@ -43,7 +43,7 @@ int connect_inet(char *host, char *service) {
 
 int main(int argc, char** argv) {
     int sock, bytes;
-    char buf[BUFLEN];
+    char buf[BUFLEN + 1];
     if (argc != 3) {
         printf("Specify host and service\n");
         exit(EXIT_FAILURE);
@@ -53,6 +53,9 @@ int main(int argc, char** argv) {
     while ((bytes = read(STDIN_FILENO, buf, BUFLEN)) > 0) {
         // printf("writing to buffer\n");
         write(sock, buf, bytes);
+        bytes = read(sock, buf, BUFLEN);
+        buf[bytes] = '\0';
+        printf("%s\n", buf);
         // FIXME: should check whether the write succeeded!
     }
     close(sock);
